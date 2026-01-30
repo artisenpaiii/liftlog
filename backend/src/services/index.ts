@@ -1,1 +1,2 @@
-export { authService, ValidationError } from "./auth.service.js";
+export { authService } from "./auth.service.js";
+export { programService } from "./program.service.js";

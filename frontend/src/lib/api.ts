@@ -1,4 +1,5 @@
 import type { AuthResponse, ProfileResponse } from "@/types/auth";
+import type { ProgramsResponse, CreateProgramResponse } from "@/types/program";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -61,4 +62,14 @@ export const auth = {
   logout: () => {
     removeToken();
   },
+};
+
+export const programs = {
+  getAll: () => api<ProgramsResponse>("/api/programs"),
+
+  create: (name: string) =>
+    api<CreateProgramResponse>("/api/programs/new", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    }),
 };

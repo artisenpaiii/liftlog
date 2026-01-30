@@ -10,6 +10,17 @@ NC='\033[0m'
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# Port configuration (can be overridden via argument or PORT env var)
+BASE_PORT="${1:-${PORT:-3000}}"
+FRONTEND_PORT=$BASE_PORT
+BACKEND_PORT=$((BASE_PORT + 1))
+
+export PORT=$BACKEND_PORT
+export NEXT_PUBLIC_API_URL="http://localhost:$BACKEND_PORT"
+
+echo -e "${CYAN}[config]${NC} Frontend: http://localhost:$FRONTEND_PORT"
+echo -e "${CYAN}[config]${NC} Backend:  http://localhost:$BACKEND_PORT"
+
 # Cleanup on exit
 cleanup() {
     echo -e "\n${YELLOW}Shutting down services...${NC}"
@@ -41,11 +52,11 @@ until docker exec liftlog-redis redis-cli ping &>/dev/null; do
 done
 echo -e "${GREEN}[docker]${NC} Redis ready"
 
-# Generate Prisma client
-echo -e "${BLUE}[prisma]${NC} Generating client..."
+# Push database schema
+echo -e "${BLUE}[drizzle]${NC} Pushing database schema..."
 cd "$ROOT_DIR/backend"
-npx prisma generate &>/dev/null
-echo -e "${GREEN}[prisma]${NC} Client ready"
+npm run db:push
+echo -e "${GREEN}[drizzle]${NC} Schema ready"
 
 echo -e "${CYAN}─────────────────────────────────────────────────────────────────${NC}"
 echo -e "${YELLOW}Starting servers... Logs below:${NC}"
@@ -59,12 +70,12 @@ mkfifo "$BACKEND_PIPE" "$FRONTEND_PIPE"
 
 # Start backend
 cd "$ROOT_DIR/backend"
-npm run dev > "$BACKEND_PIPE" 2>&1 &
+PORT=$BACKEND_PORT npm run dev > "$BACKEND_PIPE" 2>&1 &
 BACKEND_PID=$!
 
 # Start frontend
 cd "$ROOT_DIR/frontend"
-npm run dev > "$FRONTEND_PIPE" 2>&1 &
+npx next dev -p $FRONTEND_PORT > "$FRONTEND_PIPE" 2>&1 &
 FRONTEND_PID=$!
 
 # Read from pipes and prefix output

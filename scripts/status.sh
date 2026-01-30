@@ -9,6 +9,11 @@ NC='\033[0m'
 DIM='\033[2m'
 BOLD='\033[1m'
 
+# Port configuration
+BASE_PORT="${1:-3000}"
+FRONTEND_PORT=$BASE_PORT
+BACKEND_PORT=$((BASE_PORT + 1))
+
 # Check service status
 check_postgres() {
     docker exec liftlog-postgres pg_isready -U liftlog -d liftlog_db &>/dev/null
@@ -19,11 +24,11 @@ check_redis() {
 }
 
 check_backend() {
-    curl -s http://localhost:3001/health &>/dev/null
+    curl -s http://localhost:$BACKEND_PORT/health &>/dev/null
 }
 
 check_frontend() {
-    curl -s http://localhost:3000 &>/dev/null
+    curl -s http://localhost:$FRONTEND_PORT &>/dev/null
 }
 
 # Wait for all services
@@ -41,7 +46,7 @@ echo -e "${MAGENTA}${BOLD}╔═════════════════
 echo -e "${MAGENTA}${BOLD}║${NC}                    ${MAGENTA}${BOLD}LiftLog Dev Server${NC}                        ${MAGENTA}${BOLD}║${NC}"
 echo -e "${MAGENTA}${BOLD}╠════════════════════════════════════════════════════════════════╣${NC}"
 echo -e "${MAGENTA}${BOLD}║${NC}  ${GREEN}●${NC} PostgreSQL  ${DIM}localhost:5432${NC}     ${GREEN}●${NC} Redis     ${DIM}localhost:6379${NC}   ${MAGENTA}${BOLD}║${NC}"
-echo -e "${MAGENTA}${BOLD}║${NC}  ${GREEN}●${NC} Backend     ${DIM}localhost:3001${NC}     ${GREEN}●${NC} Frontend  ${DIM}localhost:3000${NC}   ${MAGENTA}${BOLD}║${NC}"
+printf "${MAGENTA}${BOLD}║${NC}  ${GREEN}●${NC} Backend     ${DIM}localhost:%-5s${NC}    ${GREEN}●${NC} Frontend  ${DIM}localhost:%-5s${NC}  ${MAGENTA}${BOLD}║${NC}\n" "$BACKEND_PORT" "$FRONTEND_PORT"
 echo -e "${MAGENTA}${BOLD}╠════════════════════════════════════════════════════════════════╣${NC}"
 echo -e "${MAGENTA}${BOLD}║${NC}  ${YELLOW}pgAdmin${NC} ${DIM}http://localhost:5050${NC}   ${YELLOW}Ctrl+B then D${NC} ${DIM}to detach${NC}       ${MAGENTA}${BOLD}║${NC}"
 echo -e "${MAGENTA}${BOLD}╚════════════════════════════════════════════════════════════════╝${NC}"

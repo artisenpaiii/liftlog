@@ -1,8 +1,7 @@
 import Fastify from "fastify";
 import { env } from "./config/index.js";
 import { corsPlugin, jwtPlugin } from "./plugins/index.js";
-import { authRoutes } from "./routes/index.js";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { authRoutes, programRoutes } from "./routes/index.js";
 
 const app = Fastify({
   logger: {
@@ -44,6 +43,7 @@ await app.register(jwtPlugin);
 
 // Register routes
 await app.register(authRoutes, { prefix: "/api/auth" });
+await app.register(programRoutes, { prefix: "/api/programs" });
 
 // Start server
 const start = async () => {

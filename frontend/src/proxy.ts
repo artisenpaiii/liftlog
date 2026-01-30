@@ -22,14 +22,12 @@ export async function proxy(request: NextRequest) {
   const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 
   if (isPublicRoute) {
-    // Redirect to home if already authenticated
     if (token && (await verifyToken(token))) {
       return NextResponse.redirect(new URL("/", request.url));
     }
     return NextResponse.next();
   }
 
-  // Protected route - check authentication
   if (!token || !(await verifyToken(token))) {
     const loginUrl = new URL("/auth/login", request.url);
     return NextResponse.redirect(loginUrl);

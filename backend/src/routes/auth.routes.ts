@@ -1,15 +1,27 @@
 import { FastifyInstance } from "fastify";
 import { authController } from "../controllers/index.js";
+import { VALIDATION, controllerWrapper } from "../utils/index.js";
 
-// JSON Schema for request validation
 const registerSchema = {
   body: {
     type: "object",
     required: ["username", "email", "password"],
     properties: {
-      username: { type: "string", minLength: 3, maxLength: 30 },
-      email: { type: "string", format: "email" },
-      password: { type: "string", minLength: 8 },
+      username: {
+        type: "string",
+        minLength: VALIDATION.USERNAME.MIN,
+        maxLength: VALIDATION.USERNAME.MAX,
+      },
+      email: {
+        type: "string",
+        format: "email",
+        maxLength: VALIDATION.EMAIL.MAX,
+      },
+      password: {
+        type: "string",
+        minLength: VALIDATION.PASSWORD.MIN,
+        maxLength: VALIDATION.PASSWORD.MAX,
+      },
     },
   },
 };
@@ -26,16 +38,7 @@ const loginSchema = {
 };
 
 export async function authRoutes(app: FastifyInstance) {
-  // POST /api/auth/register
-  app.post("/register", { schema: registerSchema }, authController.register);
-
-  // POST /api/auth/login
-  app.post("/login", { schema: loginSchema }, authController.login);
-
-  // GET /api/auth/profile (protected)
-  app.get(
-    "/profile",
-    { preHandler: [app.authenticate] },
-    authController.profile
-  );
+  app.post("/register", { schema: registerSchema }, controllerWrapper(authController.register, "Registration failed"));
+  app.post("/login", { schema: loginSchema }, controllerWrapper(authController.login, "Login failed"));
+  app.get("/profile", { preHandler: [app.authenticate] }, controllerWrapper(authController.profile, "Failed to get profile"));
 }
