@@ -70,11 +70,14 @@ export function AutoSaveInput({
   };
 
   // Save on blur immediately
-  const handleBlur = () => {
+  const handleBlur = async () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    saveValue(value);
+    // Only save if value is not empty (avoid validation errors)
+    if (value.trim()) {
+      await saveValue(value);
+    }
     onBlurProp?.();
   };
 
@@ -106,6 +109,7 @@ export function AutoSaveInput({
       onChange={handleChange}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
+      onClick={(e) => e.stopPropagation()}
       placeholder={placeholder}
       autoFocus={autoFocus}
       className={`bg-transparent border-0 outline-none focus:bg-bg-300 rounded px-1 -mx-1 transition-colors ${
